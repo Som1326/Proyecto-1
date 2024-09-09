@@ -65,8 +65,12 @@ def modexFB(n, opiniones, receptividad, R_max):
         return np.sum(np.abs(opiniones - nuevas_opiniones) * (1 - receptividad))
 
     # Generar todas las posibles estrategias de moderación (2^n combinaciones)
-    estrategias = list(itertools.product([0, 1], repeat=n))
-    total_estrategias = len(estrategias)
+    def generar_estrategias(n):
+        for estrategia in itertools.product([0, 1], repeat=n):
+            yield estrategia
+            
+    # estrategias = list(itertools.product([0, 1], repeat=n))
+    # total_estrategias = len(estrategias)
 
     # Inicializar variables para guardar la mejor estrategia
     mejor_estrategia = None
@@ -74,9 +78,12 @@ def modexFB(n, opiniones, receptividad, R_max):
     inicio = time.perf_counter()
 
     # Evaluar todas las estrategias
-    for idx, estrategia in enumerate(estrategias):
+    # for idx, estrategia in enumerate(estrategias):
+    for idx, estrategia in enumerate(generar_estrategias(n)):
         # Aplicar la estrategia: si e_i = 1, moderamos a 0, si e_i = 0, mantenemos la opinión original
-        nuevas_opiniones = np.array([opiniones[i] if estrategia[i] == 0 else 0 for i in range(n)])
+        nuevas_opiniones = np.where(estrategia, 0, opiniones)  # Optimizado
+
+        # nuevas_opiniones = np.array([opiniones[i] if estrategia[i] == 0 else 0 for i in range(n)])
     
         # Calcular esfuerzo y extremismo
         esfuerzo = esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad)
@@ -88,19 +95,21 @@ def modexFB(n, opiniones, receptividad, R_max):
             menor_extremismo = extremismo
     
         # Mostrar el progreso cada 1000 iteraciones
-        if (idx + 1) % 1 == 0:
+        if (idx + 1) % 10000 == 0:
             tiempo_actual = time.perf_counter()
             tiempo_transcurrido = tiempo_actual - inicio
-            print(f"Estrategia {idx + 1} de {total_estrategias} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
+            print(f"Estrategia {idx + 1} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
+
+            # print(f"Estrategia {idx + 1} de {total_estrategias} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
 
     # Tomar el tiempo final
     fin = time.perf_counter()
     tiempo_total = fin - inicio
 
     # Resultado
-    print("Mejor estrategia de moderación:", mejor_estrategia)
+    print("Mejor estrategia de moderacion:", mejor_estrategia)
     print("Menor extremismo alcanzado:", menor_extremismo)
-    print(f"Tiempo de ejecución: {tiempo_total:.8f} segundos")
+    print(f"Tiempo de ejecucion: {tiempo_total:.8f} segundos")
 
 # def modexPD():
 

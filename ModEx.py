@@ -51,8 +51,11 @@ def iniciar_variables(archivo):
           f"\nOpiniones: {opiniones}", 
           f"\nReceptividad: {receptividad}", 
           f"\nValor maximo: {R_max}")
-    print("----------------------\nRS'")
-    modexFB(n, opiniones, receptividad, R_max)
+    # print("----------------------\nRS' FUERZA BRUTA")
+    # modexFB(n, opiniones, receptividad, R_max)
+    # print("----------------------")
+    print("----------------------\nRS' PROGRAMACION DINAMICA")
+    modexPD(n, opiniones, receptividad, R_max)
     print("----------------------")
 
 def modexFB(n, opiniones, receptividad, R_max):
@@ -68,9 +71,6 @@ def modexFB(n, opiniones, receptividad, R_max):
     def generar_estrategias(n):
         for estrategia in itertools.product([0, 1], repeat=n):
             yield estrategia
-            
-    # estrategias = list(itertools.product([0, 1], repeat=n))
-    # total_estrategias = len(estrategias)
 
     # Inicializar variables para guardar la mejor estrategia
     mejor_estrategia = None
@@ -82,8 +82,6 @@ def modexFB(n, opiniones, receptividad, R_max):
     for idx, estrategia in enumerate(generar_estrategias(n)):
         # Aplicar la estrategia: si e_i = 1, moderamos a 0, si e_i = 0, mantenemos la opinión original
         nuevas_opiniones = np.where(estrategia, 0, opiniones)  # Optimizado
-
-        # nuevas_opiniones = np.array([opiniones[i] if estrategia[i] == 0 else 0 for i in range(n)])
     
         # Calcular esfuerzo y extremismo
         esfuerzo = esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad)
@@ -111,7 +109,63 @@ def modexFB(n, opiniones, receptividad, R_max):
     print("Menor extremismo alcanzado:", menor_extremismo)
     print(f"Tiempo de ejecucion: {tiempo_total:.8f} segundos")
 
-# def modexPD():
+def modexPD(n, opiniones, receptividad, R_max):
+    def calcular_esfuerzo(opinion, receptividad):
+        return abs(opinion - 0) * (1 - receptividad)
+    
+    # Inicializar la tabla DP con dimensiones (n+1) x (R_max+1)
+    DP = np.zeros((n + 1, R_max + 1))
+
+    # Lista para almacenar los esfuerzos de cada agente
+    esfuerzos = []
+
+    # Calcular los esfuerzos de moderación para cada agente
+    for i in range(n):
+        esfuerzo = calcular_esfuerzo(opiniones[i], receptividad[i])
+        esfuerzos.append(esfuerzo)
+
+    # Llenar la tabla DP
+    for i in range(1, n + 1):
+        for j in range(R_max + 1):
+            if esfuerzos[i - 1] <= j:  # Si se puede moderar al agente con el esfuerzo disponible
+                # Decidimos si moderamos o no al agente
+                DP[i][j] = max(DP[i - 1][j], DP[i - 1][int(j - esfuerzos[i - 1])] + abs(opiniones[i - 1]))
+            else:
+                DP[i][j] = DP[i - 1][j]  # Si no se puede moderar, mantenemos el valor anterior
+
+    # La mejor reducción de extremismo estará en DP[n][R_max]
+    mejor_reduccion_extremismo = DP[n][R_max]
+
+    # Encontrar los agentes seleccionados para moderación
+    agentes_seleccionados = []
+    j = R_max
+    for i in range(n, 0, -1):
+        if DP[i][j] != DP[i - 1][j]:  # Si hubo un cambio, significa que moderamos al agente
+            agentes_seleccionados.append(i - 1)  # Guardamos el índice del agente
+            j -= int(esfuerzos[i - 1])  # Reducimos el esfuerzo disponible
+
+    def crear_estrategia(n, agentes_seleccionados):
+        # Inicializar la estrategia con ceros
+        estrategia = np.zeros(n, dtype=int)
+        
+        # Marcar los agentes seleccionados con 1
+        for agente in agentes_seleccionados:
+            estrategia[agente] = 1
+        
+        return estrategia
+    
+    nuevas_opiniones = np.where(crear_estrategia(n, agentes_seleccionados), 0, opiniones)
+
+    def calcular_extremismo(opiniones):
+        return np.sqrt(np.sum(opiniones**2)) / n
+
+    extremismo = calcular_extremismo(nuevas_opiniones)
+
+    # Mostrar resultados
+    print(f"Mejor reducción de extremismo: {mejor_reduccion_extremismo}")
+    print(f"Agentes seleccionados para moderación: {agentes_seleccionados}")
+    print("Mejor estrategia de moderacion:", crear_estrategia(n, agentes_seleccionados))
+    print("Menor extremismo alcanzado:", extremismo)
 
 # def modexV():
 

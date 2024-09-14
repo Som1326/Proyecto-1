@@ -46,16 +46,22 @@ def iniciar_variables(archivo):
                         print(f"La línea {i} no contiene dos valores separados por coma.")
             else:
                 print(f"Tamaño del archivo de pruebas no valido.")
+
     print("----------------------\nRS")
     print(f"Numero de agentes: {n}", 
           f"\nOpiniones: {opiniones}", 
           f"\nReceptividad: {receptividad}", 
           f"\nValor maximo: {R_max}")
-    # print("----------------------\nRS' FUERZA BRUTA")
-    # modexFB(n, opiniones, receptividad, R_max)
-    # print("----------------------")
+    print("----------------------\nRS' FUERZA BRUTA")
+    modexFB(n, opiniones, receptividad, R_max)
+    print("----------------------")
     print("----------------------\nRS' PROGRAMACION DINAMICA")
-    modexPD(n, opiniones, receptividad, R_max)
+    # Llamamos a la función modex_dp_con_tracking para llenar la tabla DP y la matriz de seguimiento
+    tabla_dp, track_matrix = modexDP(n, opiniones, receptividad, R_max)
+    # Encontrar los agentes seleccionados usando la matriz de seguimiento
+    agentes_seleccionados = encontrar_agentes_seleccionados_con_tracking(tabla_dp, track_matrix, n, opiniones, receptividad, R_max)
+    print(f"Menor extremismo alcanzado: {tabla_dp[n][R_max]}")
+    print("Agentes seleccionados para moderación:", agentes_seleccionados)
     print("----------------------")
 
 def modexFB(n, opiniones, receptividad, R_max):
@@ -65,8 +71,9 @@ def modexFB(n, opiniones, receptividad, R_max):
 
     # Calcular esfuerzo de moderación
     def esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad):
-        return np.sum(np.abs(opiniones - nuevas_opiniones) * (1 - receptividad))
-
+        esfuerzo = np.round(np.abs(opiniones - nuevas_opiniones) * (1 - receptividad))
+        return np.sum(esfuerzo)
+    
     # Generar todas las posibles estrategias de moderación (2^n combinaciones)
     def generar_estrategias(n):
         for estrategia in itertools.product([0, 1], repeat=n):
@@ -74,6 +81,7 @@ def modexFB(n, opiniones, receptividad, R_max):
 
     # Inicializar variables para guardar la mejor estrategia
     mejor_estrategia = None
+    esfuerzo_maximo = 0
     menor_extremismo = float('inf')
     inicio = time.perf_counter()
 
@@ -90,13 +98,14 @@ def modexFB(n, opiniones, receptividad, R_max):
         # Verificar si la estrategia es válida (esfuerzo <= R_max)
         if esfuerzo <= R_max and extremismo < menor_extremismo:
             mejor_estrategia = estrategia
+            esfuerzo_maximo = esfuerzo
             menor_extremismo = extremismo
     
         # Mostrar el progreso cada 1000 iteraciones
-        if (idx + 1) % 10000 == 0:
-            tiempo_actual = time.perf_counter()
-            tiempo_transcurrido = tiempo_actual - inicio
-            print(f"Estrategia {idx + 1} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
+        # if (idx + 1) % 10000 == 0:
+        #     tiempo_actual = time.perf_counter()
+        #     tiempo_transcurrido = tiempo_actual - inicio
+        #     print(f"Estrategia {idx + 1} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
 
             # print(f"Estrategia {idx + 1} de {total_estrategias} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
 
@@ -106,66 +115,50 @@ def modexFB(n, opiniones, receptividad, R_max):
 
     # Resultado
     print("Mejor estrategia de moderacion:", mejor_estrategia)
+    print("Esfuerzo maximo:", esfuerzo_maximo)
     print("Menor extremismo alcanzado:", menor_extremismo)
     print(f"Tiempo de ejecucion: {tiempo_total:.8f} segundos")
 
-def modexPD(n, opiniones, receptividad, R_max):
-    def calcular_esfuerzo(opinion, receptividad):
-        return abs(opinion - 0) * (1 - receptividad)
+def modexDP(n, opiniones, receptividad, R_max):
+    # Inicializar la tabla DP y la matriz de seguimiento
+    DP = np.full((n + 1, R_max + 1), float('inf'))
+    track_matrix = np.zeros((n + 1, R_max + 1), dtype=int)
     
-    # Inicializar la tabla DP con dimensiones (n+1) x (R_max+1)
-    DP = np.zeros((n + 1, R_max + 1))
-
-    # Lista para almacenar los esfuerzos de cada agente
-    esfuerzos = []
-
-    # Calcular los esfuerzos de moderación para cada agente
-    for i in range(n):
-        esfuerzo = calcular_esfuerzo(opiniones[i], receptividad[i])
-        esfuerzos.append(esfuerzo)
-
-    # Llenar la tabla DP
+    # Caso base
+    for j in range(R_max + 1):
+        DP[0][j] = np.sqrt(np.sum(opiniones**2)) / n
+    
+    # Llenar la tabla DP y la matriz de seguimiento
     for i in range(1, n + 1):
         for j in range(R_max + 1):
-            if esfuerzos[i - 1] <= j:  # Si se puede moderar al agente con el esfuerzo disponible
-                # Decidimos si moderamos o no al agente
-                DP[i][j] = max(DP[i - 1][j], DP[i - 1][int(j - esfuerzos[i - 1])] + abs(opiniones[i - 1]))
+            esfuerzo_actual = np.round(np.abs(opiniones[i - 1]) * (1 - receptividad[i - 1]))
+            
+            if esfuerzo_actual <= j:
+                # Caso 4: Minimizar entre moderar o no moderar al agente
+                sin_modificar = np.sqrt((DP[i - 1][j] * (i - 1))**2 + opiniones[i - 1]**2) / i
+                if j - int(esfuerzo_actual) >= 0:
+                    modificar = np.sqrt((DP[i - 1][j - int(esfuerzo_actual)] * (i - 1))**2) / i
+                    if modificar < sin_modificar:
+                        DP[i][j] = modificar
+                        track_matrix[i][j] = 1  # Marcar que moderamos al agente i-1
+                    else:
+                        DP[i][j] = sin_modificar
+                else:
+                    DP[i][j] = sin_modificar
             else:
-                DP[i][j] = DP[i - 1][j]  # Si no se puede moderar, mantenemos el valor anterior
+                # Caso 3: Solo considerar no moderar al agente
+                DP[i][j] = np.sqrt((DP[i - 1][j] * (i - 1))**2 + opiniones[i - 1]**2) / i
+    
+    return DP, track_matrix
 
-    # La mejor reducción de extremismo estará en DP[n][R_max]
-    mejor_reduccion_extremismo = DP[n][R_max]
-
-    # Encontrar los agentes seleccionados para moderación
+def encontrar_agentes_seleccionados_con_tracking(DP, track_matrix, n, opiniones, receptividad, R_max):
     agentes_seleccionados = []
     j = R_max
     for i in range(n, 0, -1):
-        if DP[i][j] != DP[i - 1][j]:  # Si hubo un cambio, significa que moderamos al agente
+        if j >= 0 and track_matrix[i][j] == 1:
             agentes_seleccionados.append(i - 1)  # Guardamos el índice del agente
-            j -= int(esfuerzos[i - 1])  # Reducimos el esfuerzo disponible
-
-    def crear_estrategia(n, agentes_seleccionados):
-        # Inicializar la estrategia con ceros
-        estrategia = np.zeros(n, dtype=int)
-        
-        # Marcar los agentes seleccionados con 1
-        for agente in agentes_seleccionados:
-            estrategia[agente] = 1
-        
-        return estrategia
-    
-    nuevas_opiniones = np.where(crear_estrategia(n, agentes_seleccionados), 0, opiniones)
-
-    def calcular_extremismo(opiniones):
-        return np.sqrt(np.sum(opiniones**2)) / n
-
-    extremismo = calcular_extremismo(nuevas_opiniones)
-
-    # Mostrar resultados
-    print(f"Mejor reducción de extremismo: {mejor_reduccion_extremismo}")
-    print(f"Agentes seleccionados para moderación: {agentes_seleccionados}")
-    print("Mejor estrategia de moderacion:", crear_estrategia(n, agentes_seleccionados))
-    print("Menor extremismo alcanzado:", extremismo)
+            j -= int(np.abs(opiniones[i - 1]) * (1 - receptividad[i - 1]))  # Reducimos el esfuerzo disponible
+    return agentes_seleccionados
 
 # def modexV():
 

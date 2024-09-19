@@ -91,58 +91,56 @@ def iniciar_variables(archivo):
     print(f"Tiempo de ejecucion: {tiempo_totalV:.8f} segundos")
     print("----------------------")
 
-def modexFB(n, opiniones, receptividad, R_max):
-    # Calcular extremismo
-    def calcular_extremismo(opiniones):
-        return np.sqrt(np.sum(opiniones**2)) / n
+# def modexFB(n, opiniones, receptividad, R_max):
+#     # Calcular extremismo
+#     def calcular_extremismo(opiniones):
+#         return np.sqrt(np.sum(opiniones**2)) / n
 
-    # Calcular esfuerzo de moderación
-    def esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad):
-        esfuerzo = 0
-        for i in range (n):
-            esfuerzo = esfuerzo + np.ceil(np.abs(opiniones[i] - nuevas_opiniones[i]) * (1 - receptividad[i]))
-        return esfuerzo
+#     # Calcular esfuerzo de moderación
+#     def esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad):
+#         esfuerzo = np.ceil(np.abs(opiniones - nuevas_opiniones) * (1 - receptividad))
+#         return np.sum(esfuerzo)
     
-    # Generar todas las posibles estrategias de moderación (2^n combinaciones)
-    def generar_estrategias(n):
-        for estrategia in itertools.product([0, 1], repeat=n):
-            yield estrategia
+#     # Generar todas las posibles estrategias de moderación (2^n combinaciones)
+#     def generar_estrategias(n):
+#         for estrategia in itertools.product([0, 1], repeat=n):
+#             yield estrategia
 
-    # Inicializar variables para guardar la mejor estrategia
-    mejor_estrategia = None
-    esfuerzo_maximo = 0
-    menor_extremismo = float('inf')
-    inicio = time.perf_counter()
+#     # Inicializar variables para guardar la mejor estrategia
+#     mejor_estrategia = None
+#     esfuerzo_maximo = 0
+#     menor_extremismo = float('inf')
+#     inicio = time.perf_counter()
 
-    # Evaluar todas las estrategias
-    # for idx, estrategia in enumerate(estrategias):
-    for idx, estrategia in enumerate(generar_estrategias(n)):
-        # Aplicar la estrategia: si e_i = 1, moderamos a 0, si e_i = 0, mantenemos la opinión original
-        nuevas_opiniones = np.where(estrategia, 0, opiniones)  # Optimizado
+#     # Evaluar todas las estrategias
+#     # for idx, estrategia in enumerate(estrategias):
+#     for idx, estrategia in enumerate(generar_estrategias(n)):
+#         # Aplicar la estrategia: si e_i = 1, moderamos a 0, si e_i = 0, mantenemos la opinión original
+#         nuevas_opiniones = np.where(estrategia, 0, opiniones)  # Optimizado
     
-        # Calcular esfuerzo y extremismo
-        esfuerzo = esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad)
-        extremismo = calcular_extremismo(nuevas_opiniones)
+#         # Calcular esfuerzo y extremismo
+#         esfuerzo = esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad)
+#         extremismo = calcular_extremismo(nuevas_opiniones)
     
-        # Verificar si la estrategia es válida (esfuerzo <= R_max)
-        if esfuerzo <= R_max and extremismo < menor_extremismo:
-            mejor_estrategia = estrategia
-            esfuerzo_maximo = esfuerzo
-            menor_extremismo = extremismo
+#         # Verificar si la estrategia es válida (esfuerzo <= R_max)
+#         if esfuerzo <= R_max and extremismo < menor_extremismo:
+#             mejor_estrategia = estrategia
+#             esfuerzo_maximo = esfuerzo
+#             menor_extremismo = extremismo
     
-        # Mostrar el progreso cada 1000 iteraciones
-        # if (idx + 1) % 10000 == 0:
-        #     tiempo_actual = time.perf_counter()
-        #     tiempo_transcurrido = tiempo_actual - inicio
-        #     print(f"Estrategia {idx + 1} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
+#         # Mostrar el progreso cada 1000 iteraciones
+#         # if (idx + 1) % 10000 == 0:
+#         #     tiempo_actual = time.perf_counter()
+#         #     tiempo_transcurrido = tiempo_actual - inicio
+#         #     print(f"Estrategia {idx + 1} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
 
-            # print(f"Estrategia {idx + 1} de {total_estrategias} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
+#             # print(f"Estrategia {idx + 1} de {total_estrategias} procesada. Tiempo transcurrido: {tiempo_transcurrido:.2f} segundos.")
 
-    # Tomar el tiempo final
-    fin = time.perf_counter()
-    tiempo_total = fin - inicio
+#     # Tomar el tiempo final
+#     fin = time.perf_counter()
+#     tiempo_total = fin - inicio
 
-    return mejor_estrategia, esfuerzo_maximo, menor_extremismo, tiempo_total
+#     return mejor_estrategia, esfuerzo_maximo, menor_extremismo, tiempo_total
 
 def modexDP(n, opiniones, receptividad, R_max):
     # Inicializar la tabla DP y la matriz de seguimiento
@@ -186,11 +184,10 @@ def encontrar_agentes_seleccionados_con_tracking(track_matrix, n, opiniones, rec
     esfuerzo_total = 0
     j = R_max
 
+    # Calcular esfuerzo de moderación
     def esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad):
-        esfuerzo = 0
-        for i in range (n):
-            esfuerzo = esfuerzo + np.ceil(np.abs(opiniones[i] - nuevas_opiniones[i]) * (1 - receptividad[i]))
-        return esfuerzo
+        esfuerzo = np.ceil(np.abs(opiniones - nuevas_opiniones) * (1 - receptividad))
+        return np.sum(esfuerzo)
 
     for i in range(n, 0, -1):
         if j >= 0 and track_matrix[i][j] == 1:
@@ -260,3 +257,15 @@ def modexV(opiniones, receptividades, R_max):
     return estrategia, agentes_seleccionados, extremismo_final, esfuerzo_total, tiempo_total
 
 abrir_archivo()
+
+
+# ESTE ES EL EJEMPLO DEL 1 A 1 QUE SE PUEDE APLICAR EN LO DE FUERZA BRUTA SI ALGO, 
+# IGUAL QUEDA COMENTADO POR SI LO NECESITAN 
+# def esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad):
+#     esfuerzo_total = 0
+#     for i in range(len(opiniones)):
+#         if nuevas_opiniones[i] == 0:  # Se modera al agente
+#             diferencia = abs(opiniones[i] - nuevas_opiniones[i])
+#             esfuerzo_individual = np.ceil(diferencia * (1 - receptividad[i]))
+#             esfuerzo_total += np.ceil(esfuerzo_individual)  # Redondeamos el esfuerzo individual
+#     return esfuerzo_total

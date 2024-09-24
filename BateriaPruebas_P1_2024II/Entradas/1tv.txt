@@ -1,0 +1,25 @@
+Resultados Algoritmo de programacion dinamica: Prueba1.txt
+Estrategia de Moderación: [1, 1, 0, 1, 1]
+Menor extremismo alcanzado: 5.8
+Esfuerzo total utilizado: 74.0 
+Tiempo de ejecución: 0.00131460 segundos
+
+
+Resultados Algoritmo de programacion dinamica: Prueba10.txt
+Estrategia de Moderación: [0 0 0 0 0 1 0 1 1 0 1 1 1 0 0 1 0 0 1 1 0 0 1 0 0 1 1 1 1 1 1 0 1 1 0 1 1
+ 0 0 1 0 1 1 1 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 1 1 1 0
+ 1 0 1 1 1 0 1 0 0 1 0 1 1 1 1 1 0 1 0 0 1 1 0 0 1 1]
+Menor extremismo alcanzado: 2.4195867415738577
+Esfuerzo total utilizado: 1502.0 
+Tiempo de ejecución: 1.48090590 segundos
+
+
+Resultados Algoritmo Voraz: Prueba10.txt
+Estrategia de Moderación: [0 0 0 0 0 1 0 1 1 0 1 1 1 0 0 1 0 0 1 1 0 0 1 0 0 1 1 1 1 1 1 0 1 1 0 1 1
+ 0 0 1 0 1 1 1 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 1 1 1 0
+ 1 0 1 1 1 0 1 0 0 1 0 1 1 1 1 1 0 1 0 0 1 1 0 0 1 1]
+Menor extremismo alcanzado: 2.419586741573858
+Esfuerzo total utilizado: 1502.0 
+Tiempo de ejecución: 0.00053390 segundos
+
+

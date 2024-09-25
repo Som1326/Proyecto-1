@@ -20,7 +20,7 @@ class ModEx:
             self.opiniones = np.array([float(linea.split(',')[0]) for linea in lineas[1:self.n+1]])
             self.receptividad = np.array([float(linea.split(',')[1]) for linea in lineas[1:self.n+1]])
             self.R_max = int(lineas[-1])
-        print(f"Archivo cargado: {self.n} agentes, {self.opiniones}, {self.receptividad}, R_max: {self.R_max}")
+        # print(f"Archivo cargado: {self.n} agentes, {self.opiniones}, {self.receptividad}, R_max: {self.R_max}")
 
     def crear_grafico_dispersión(self, canvas):
         # Crear una figura con matplotlib

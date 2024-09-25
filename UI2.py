@@ -130,8 +130,11 @@ class Application2:
         scrollbar_horizontal.grid(row=11, column=1, columnspan=2, sticky='ew')
         self.estrategia_canvas.configure(xscrollcommand=scrollbar_horizontal.set)
         self.estrategia_canvas.configure(scrollregion=self.estrategia_canvas.bbox("all"))
-
-    
+        
+        self.grafico_canvas_res = tk.Canvas(scrollable_frame, width=500, height=400)
+        self.grafico_canvas_res.grid(row=12, column=0, columnspan=6, pady=10 ,padx=1)
+        
+        
     def guardar_resultados(self, algoritmo, resultado):
         self.resultados[algoritmo] = resultado
         self.ultimo_algoritmo = algoritmo
@@ -163,7 +166,7 @@ class Application2:
             messagebox.showerror("Error", "Esta solucion permite un maximo de 20 Agentes")
             return  
         
-        mejor_estrategia, esfuerzo_maximo, menor_extremismo, tiempo_total = self.modex.modexFB()
+        mejor_estrategia, esfuerzo_maximo, menor_extremismo, tiempo_total,nuevas_opinionesFB = self.modex.modexFB()
         
         #Actualizar las etiquetas con los resultados
         self.titulo_prueba_label.config(text="Resultados algoritmo de fuerza bruta")
@@ -173,20 +176,23 @@ class Application2:
         self.mostrar_estrategia(mejor_estrategia)
         self.esfuerzo_label.config(text=f"{esfuerzo_maximo} / {self.modex.R_max}")
         self.tiempo_label.config(text=f"{tiempo_total:.8f} segundos")
+        self.grafico_canvas_res.delete("all")
+        self.modex.crear_grafico_dispersión_resultados(self.grafico_canvas_res, nuevas_opinionesFB)
+        
         
         resultado_fb = (
-            f"Resultados Algoritmo de programacion dinamica: {self.nombre_archivo}\n"
-            f"Estrategia de Moderación: {mejor_estrategia}\n"
+            f"Resultados Algoritmo de fuerza bruta: {self.nombre_archivo}\n"
+            f"Estrategia de Moderacion: {mejor_estrategia}\n"
             f"Menor extremismo alcanzado: {menor_extremismo}\n"
             f"Esfuerzo total utilizado: {esfuerzo_maximo} \n"
-            f"Tiempo de ejecución: {tiempo_total:.8f} segundos\n"
+            f"Tiempo de ejecucion: {tiempo_total:.8f} segundos\n"
         )    
         self.guardar_resultados('fuerza_bruta', resultado_fb)
     
     def execute_dp(self):
         tabla_dp, track_matrix, tiempo_totalDP = self.modex.modexDP()
         menor_extremismo = tabla_dp[self.modex.n][self.modex.R_max]
-        estrategiaDP, agentes_seleccionados, esfuerzo_totalDP = self.modex.encontrar_agentes_seleccionados_con_tracking(track_matrix)
+        estrategiaDP, agentes_seleccionados, esfuerzo_totalDP, Nuevas_OpinionesDP = self.modex.encontrar_agentes_seleccionados_con_tracking(track_matrix)
 
         # Actualizar etiquetas con los resultados
         self.titulo_prueba_label.config(text="Resultados algoritmo de programacion dinamica")
@@ -196,18 +202,20 @@ class Application2:
         self.mostrar_estrategia(estrategiaDP)
         self.esfuerzo_label.config(text=f"{esfuerzo_totalDP} / {self.modex.R_max}")
         self.tiempo_label.config(text=f"{tiempo_totalDP:.8f} segundos")
+        self.grafico_canvas_res.delete("all")
+        self.modex.crear_grafico_dispersión_resultados(self.grafico_canvas_res,  Nuevas_OpinionesDP)
         
         resultado_dp = (
             f"Resultados Algoritmo de programacion dinamica: {self.nombre_archivo}\n"
-            f"Estrategia de Moderación: {estrategiaDP}\n"
+            f"Estrategia de Moderacion: {estrategiaDP}\n"
             f"Menor extremismo alcanzado: {menor_extremismo}\n"
             f"Esfuerzo total utilizado: {esfuerzo_totalDP} \n"
-            f"Tiempo de ejecución: {tiempo_totalDP:.8f} segundos\n"
+            f"Tiempo de ejecucion: {tiempo_totalDP:.8f} segundos\n"
         )    
         self.guardar_resultados('programacion_dinamica', resultado_dp)
 
     def execute_v(self):
-        estrategiaV, agentes_seleccionados, extremismo_final, esfuerzo_totalV, tiempo_totalV = self.modex.modexV()
+        estrategiaV, agentes_seleccionados, extremismo_final, esfuerzo_totalV, tiempo_totalV, Nuevas_OpinionesV = self.modex.modexV()
         
         #Actualizar las etiquetas con los resultados
         self.titulo_prueba_label.config(text="Resultados algoritmo Voraz")
@@ -217,18 +225,18 @@ class Application2:
         self.mostrar_estrategia(estrategiaV)
         self.esfuerzo_label.config(text=f"{esfuerzo_totalV} / {self.modex.R_max}")
         self.tiempo_label.config(text=f"{tiempo_totalV:.8f} segundos")
+        self.grafico_canvas_res.delete("all")
+        self.modex.crear_grafico_dispersión_resultados(self.grafico_canvas_res, Nuevas_OpinionesV)
         
         resultado_v = (
             f"Resultados Algoritmo Voraz: {self.nombre_archivo}\n"
-            f"Estrategia de Moderación: {estrategiaV}\n"
+            f"Estrategia de Moderacion: {estrategiaV}\n"
             f"Menor extremismo alcanzado: {extremismo_final}\n"
             f"Esfuerzo total utilizado: {esfuerzo_totalV} \n"
-            f"Tiempo de ejecución: {tiempo_totalV:.8f} segundos\n"
+            f"Tiempo de ejecucion: {tiempo_totalV:.8f} segundos\n"
         )    
         self.guardar_resultados('voraz', resultado_v)
-
-    
-            
+        
     def mostrar_estrategia(self, estrategia):
         # Limpiar el canvas
         self.estrategia_canvas.delete("all")

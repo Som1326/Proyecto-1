@@ -11,6 +11,7 @@ class ModEx:
         self.opiniones = np.array([])
         self.receptividad = np.array([])
         self.R_max = 0
+        self.nuevas_opinionesR = np.array([])
 
     def iniciar_variables(self, archivo):
         with open(archivo, 'r') as file:
@@ -74,7 +75,6 @@ class ModEx:
         for idx, estrategia in enumerate(generar_estrategias(n)):
             # Aplicar la estrategia: si e_i = 1, moderamos a 0, si e_i = 0, mantenemos la opinión original
             nuevas_opiniones = np.where(estrategia, 0, opiniones)  # Optimizado
-        
             # Calcular esfuerzo y extremismo
             esfuerzo = esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad)
             extremismo = calcular_extremismo(nuevas_opiniones)
@@ -84,11 +84,12 @@ class ModEx:
                 mejor_estrategia = estrategia
                 esfuerzo_maximo = esfuerzo
                 menor_extremismo = extremismo
+                nuevas_opiniones_final = nuevas_opiniones
         
         # Tomar el tiempo final
         fin = time.perf_counter()
         tiempo_total = fin - inicio
-        return list(mejor_estrategia), esfuerzo_maximo, menor_extremismo, tiempo_total
+        return list(mejor_estrategia), esfuerzo_maximo, menor_extremismo, tiempo_total, nuevas_opiniones_final
 
     def modexDP(self):
         n, opiniones, receptividad, R_max = self.n, self.opiniones, self.receptividad, self.R_max
@@ -149,7 +150,7 @@ class ModEx:
         nuevas_opiniones = np.where(estrategia, 0, opiniones)
         esfuerzo_total = esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad)
 
-        return estrategia, agentes_seleccionados, esfuerzo_total
+        return estrategia, agentes_seleccionados, esfuerzo_total, nuevas_opiniones
 
     def modexV(self):
         opiniones, receptividades, R_max = self.opiniones, self.receptividad, self.R_max
@@ -205,6 +206,37 @@ class ModEx:
         tiempo_total = fin - inicio
 
         # Retornar la estrategia (agentes seleccionados), el extremismo final y el esfuerzo total utilizado
-        return estrategia, agentes_seleccionados, extremismo_final, esfuerzo_total, tiempo_total
+        return estrategia, agentes_seleccionados, extremismo_final, esfuerzo_total, tiempo_total, nuevas_opiniones_final
 
+
+    def crear_grafico_dispersión_resultados(self, canvas, nuevas_opiniones):
+        for widget in canvas.winfo_children():
+            widget.destroy()
+            
+        # Crear una figura con matplotlib
+        fig, ax = plt.subplots(figsize=(12, 4))
+
+        # Configurar el gráfico de dispersión
+        x = nuevas_opiniones
+        y = np.random.uniform(-0.5, 0.5, size=x.shape) # El eje y será 0 para todas las opiniones
+        ax.scatter(x, y, color='blue', s=5)
+
+        # Configuración del eje x para que vaya de -100 a 100
+        ax.set_xlim([-100, 100])
+        ax.set_xticks(np.arange(-100, 101, 10))
+        ax.set_ylim([-1, 1])  # Mantener el eje y centrado
+        # ax.axhline(0, color='black',linewidth=0.5)  # Línea central en y=0
+        ax.axvline(0, color='black',linewidth=0.5, linestyle=(0, (5, 5)))  # Línea central en x=0
+        ax.set_xlabel("Opiniones")
+        ax.set_title("Gráfico de Dispersión de Opiniones Moderadas")
+
+        # Eliminar el eje y
+        ax.get_yaxis().set_visible(False)
+
+        # Convertir el gráfico a un canvas de Tkinter
+        
+        canvas_figura = FigureCanvasTkAgg(fig, master=canvas)
+        canvas_figura.draw()
+        canvas_figura.get_tk_widget().pack()
+        
     

@@ -162,11 +162,11 @@ class Application2:
             tk.messagebox.showinfo("Éxito", "El archivo se ha descargado correctamente.")
 
     def execute_fb(self):
-        if self.modex.n > 20:
-            messagebox.showerror("Error", "Esta solucion permite un maximo de 20 Agentes")
+        if self.modex.n > 25:
+            messagebox.showerror("Error", "Esta solucion permite un maximo de 25 Agentes")
             return  
         
-        mejor_estrategia, esfuerzo_maximo, menor_extremismo, tiempo_total,nuevas_opinionesFB = self.modex.modexFB()
+        mejor_estrategia, esfuerzo_maximo, menor_extremismo, tiempo_total,nuevas_opinionesFB = self.modex.rocFB()
         
         #Actualizar las etiquetas con los resultados
         self.titulo_prueba_label.config(text="Resultados algoritmo de fuerza bruta")
@@ -190,7 +190,7 @@ class Application2:
         self.guardar_resultados('fuerza_bruta', resultado_fb)
     
     def execute_dp(self):
-        tabla_dp, track_matrix, tiempo_totalDP = self.modex.modexDP()
+        tabla_dp, track_matrix, tiempo_totalDP = self.modex.rocDP()
         menor_extremismo = tabla_dp[self.modex.n][self.modex.R_max]
         estrategiaDP, agentes_seleccionados, esfuerzo_totalDP, Nuevas_OpinionesDP = self.modex.encontrar_agentes_seleccionados_con_tracking(track_matrix)
 
@@ -215,7 +215,7 @@ class Application2:
         self.guardar_resultados('programacion_dinamica', resultado_dp)
 
     def execute_v(self):
-        estrategiaV, agentes_seleccionados, extremismo_final, esfuerzo_totalV, tiempo_totalV, Nuevas_OpinionesV = self.modex.modexV()
+        estrategiaV, agentes_seleccionados, extremismo_final, esfuerzo_totalV, tiempo_totalV, Nuevas_OpinionesV = self.modex.rocV()
         
         #Actualizar las etiquetas con los resultados
         self.titulo_prueba_label.config(text="Resultados algoritmo Voraz")

@@ -48,7 +48,7 @@ class ModEx:
         canvas_figura.draw()
         canvas_figura.get_tk_widget().pack()
         
-    def modexFB(self):
+    def rocFB(self):
         n, opiniones, receptividad, R_max = self.n, self.opiniones, self.receptividad, self.R_max
         # Calcular extremismo
         def calcular_extremismo(opiniones):
@@ -91,7 +91,7 @@ class ModEx:
         tiempo_total = fin - inicio
         return list(mejor_estrategia), esfuerzo_maximo, menor_extremismo, tiempo_total, nuevas_opiniones_final
 
-    def modexDP(self):
+    def rocDP(self):
         n, opiniones, receptividad, R_max = self.n, self.opiniones, self.receptividad, self.R_max
 
         # Inicializar la tabla DP y la matriz de seguimiento
@@ -152,7 +152,7 @@ class ModEx:
 
         return estrategia, agentes_seleccionados, esfuerzo_total, nuevas_opiniones
 
-    def modexV(self):
+    def rocV(self):
         opiniones, receptividades, R_max = self.opiniones, self.receptividad, self.R_max
         # Función para calcular el extremismo de una red social
         def calcular_extremismo(opiniones):

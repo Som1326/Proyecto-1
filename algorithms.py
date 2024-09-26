@@ -29,10 +29,12 @@ class ModEx:
         # Configurar el gráfico de dispersión
         x = self.opiniones
         y = np.random.uniform(-0.5, 0.5, size=x.shape) # El eje y será 0 para todas las opiniones
-        ax.scatter(x, y, color='blue', s=5)
+        cmap = plt.cm.RdYlGn
+        colores = cmap(self.receptividad)
+        ax.scatter(x, y, color=colores, edgecolors='black', s=12)
 
         # Configuración del eje x para que vaya de -100 a 100
-        ax.set_xlim([-100, 100])
+        ax.set_xlim([-105, 105])
         ax.set_xticks(np.arange(-100, 101, 10))
         ax.set_ylim([-1, 1])  # Mantener el eje y centrado
         # ax.axhline(0, color='black',linewidth=0.5)  # Línea central en y=0
@@ -219,7 +221,7 @@ class ModEx:
         # Configurar el gráfico de dispersión
         x = nuevas_opiniones
         y = np.random.uniform(-0.5, 0.5, size=x.shape) # El eje y será 0 para todas las opiniones
-        ax.scatter(x, y, color='blue', s=5)
+        ax.scatter(x, y, color='#00A995',edgecolors='black', s=10)
 
         # Configuración del eje x para que vaya de -100 a 100
         ax.set_xlim([-100, 100])

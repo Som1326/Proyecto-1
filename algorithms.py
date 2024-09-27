@@ -224,7 +224,7 @@ class ModEx:
         ax.scatter(x, y, color='#00A995',edgecolors='black', s=10)
 
         # Configuración del eje x para que vaya de -100 a 100
-        ax.set_xlim([-100, 100])
+        ax.set_xlim([-105, 105])
         ax.set_xticks(np.arange(-100, 101, 10))
         ax.set_ylim([-1, 1])  # Mantener el eje y centrado
         # ax.axhline(0, color='black',linewidth=0.5)  # Línea central en y=0

@@ -153,9 +153,9 @@ class ModEx:
         esfuerzo_total = esfuerzo_moderacion(opiniones, nuevas_opiniones, receptividad)
 
         return estrategia, agentes_seleccionados, esfuerzo_total, nuevas_opiniones
-
     def rocV(self):
         opiniones, receptividades, R_max = self.opiniones, self.receptividad, self.R_max
+        
         # Función para calcular el extremismo de una red social
         def calcular_extremismo(opiniones):
             n = len(opiniones)
@@ -167,18 +167,21 @@ class ModEx:
         # Extremismo inicial de la red sin moderar ningún agente
         extremismo_inicial = calcular_extremismo(opiniones)
 
-        # Generar nuevas opiniones moderando cada agente (opiniones moderadas a 0)
-        nuevas_opiniones = np.tile(opiniones, (n, 1))  # Crear una matriz con n filas de las opiniones originales
-        np.fill_diagonal(nuevas_opiniones, 0)  # Poner 0 en las diagonales (moderar agente i)
-
-        # Calcular el extremismo modificado para cada agente
-        extremismo_modificado = np.sqrt(np.sum(nuevas_opiniones**2, axis=1)) / n
-
-        # Calcular el beneficio para cada agente (reducción del extremismo)
-        beneficio = extremismo_inicial - extremismo_modificado
-
-        # Calcular el esfuerzo para cada agente
+        # Inicializar esfuerzo y beneficio para cada agente
         esfuerzo = np.ceil(np.abs(opiniones) * (1 - receptividades))
+        beneficio = np.zeros(n)
+
+        # Calcular el beneficio de moderar a cada agente
+        for i in range(n):
+            # Crear una copia temporal de las opiniones y moderar el agente 'i'
+            nuevas_opiniones = opiniones.copy()
+            nuevas_opiniones[i] = 0  # Moderar el agente i
+            
+            # Calcular el extremismo modificado
+            extremismo_modificado = calcular_extremismo(nuevas_opiniones)
+            
+            # El beneficio es la reducción del extremismo
+            beneficio[i] = extremismo_inicial - extremismo_modificado
 
         # Evitar divisiones por cero
         beneficio_costo = np.where(esfuerzo > 0, beneficio / esfuerzo, 0)
@@ -209,8 +212,6 @@ class ModEx:
 
         # Retornar la estrategia (agentes seleccionados), el extremismo final y el esfuerzo total utilizado
         return estrategia, agentes_seleccionados, extremismo_final, esfuerzo_total, tiempo_total, nuevas_opiniones_final
-
-
     def crear_grafico_dispersión_resultados(self, canvas, nuevas_opiniones):
         for widget in canvas.winfo_children():
             widget.destroy()
